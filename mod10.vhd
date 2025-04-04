@@ -2,9 +2,9 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date:    15:39:54 03/13/2025 
+-- Create Date:    15:16:56 03/13/2025 
 -- Design Name: 
--- Module Name:    mux - Behavioral 
+-- Module Name:    mod10 - Behavioral 
 -- Project Name: 
 -- Target Devices: 
 -- Tool versions: 
@@ -29,42 +29,44 @@ use IEEE.STD_LOGIC_UNSIGNED.ALL;
 --library UNISIM;
 --use UNISIM.VComponents.all;
 
-entity mux is
-    Port ( clk : std_logic;
-			  bcd : in  STD_LOGIC_VECTOR (7 downto 0);
-			  swsev,swled : in STD_LOGIC;
-			  sevenseg : out  STD_LOGIC_VECTOR (7 downto 0);
-			  ledout : out STD_LOGIC_VECTOR (3 downto 0);
-			  ledin : in STD_LOGIC_VECTOR (3 downto 0));
-end mux;
+entity mod10 is
+    Port ( clk,rst,swled,swsev : in  STD_LOGIC;
+           count,led : out  STD_LOGIC_VECTOR (3 downto 0));
+end mod10;
 
-architecture Behavioral of mux is
-	signal sevsig : std_logic_vector (7 downto 0) ;
-	signal ledsig : std_logic_vector (3 downto 0) := "0000";
+architecture Behavioral of mod10 is
+	signal cnt,cntled : std_logic_vector (3 downto 0);
 begin
-	le : process (clk,swled,swsev,ledin,ledsig,sevsig,bcd)
+	mod_10	: process (clk,rst,cnt,swsev)
 	begin
-		if (swled = '0') then
-			ledsig <= "0000";
+		if (rst = '0') then
+			cnt <= "0000";
+		elsif (swsev = '0') then
+			cnt <= "0000";
 		elsif (rising_edge(clk)) then
-			ledsig <= ledin;
-		else
-			ledsig <= ledin;
+			if (cnt = "1001") then
+				cnt <= "0000";
+			else 
+				cnt <= cnt + 1;
+			end if;
 		end if;
-	end process le;
+	end process mod_10;
 	
-	sev : process (clk,swled,swsev,ledin,ledsig,sevsig,bcd)
+	ledmod	: process (clk,rst,cnt,swled,swsev)
 	begin
-		if (swsev = '0') then
-			sevsig <= "11111111";
+		if (rst = '0') then
+			cntled <= "0000";
+		elsif (swled = '0') then
+			cntled <= "0000";
 		elsif (rising_edge(clk)) then
-			sevsig <= bcd;
-		else
-			sevsig <= bcd;
+			if (cntled = "1001") then
+				cntled <= "0000";
+			else 
+				cntled <= cntled + 1;
+			end if;
 		end if;
-	end process sev;
-	ledout <= ledsig;
-	sevenseg <= sevsig;
-	
+	end process ledmod;
+	count <= cnt;
+	led <= cntled;
 end Behavioral;
 
