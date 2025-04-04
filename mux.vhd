@@ -2,7 +2,7 @@
 -- Company: 
 -- Engineer: 
 -- 
--- Create Date:    04:59:44 03/06/2025 
+-- Create Date:    18:35:15 03/13/2025 
 -- Design Name: 
 -- Module Name:    mux - Behavioral 
 -- Project Name: 
@@ -19,6 +19,7 @@
 ----------------------------------------------------------------------------------
 library IEEE;
 use IEEE.STD_LOGIC_1164.ALL;
+use IEEE.STD_LOGIC_UNSIGNED.ALL;
 
 -- Uncomment the following library declaration if using
 -- arithmetic functions with Signed or Unsigned values
@@ -31,28 +32,31 @@ use IEEE.STD_LOGIC_1164.ALL;
 
 entity mux is
     Port ( clk : in  STD_LOGIC;
-           bcd1,bcd2 : in  STD_LOGIC_VECTOR (7 downto 0);
+           bcd1,bcd2,bcd3 : in  STD_LOGIC_VECTOR (7 downto 0);
 			  sevenseg : out  STD_LOGIC_VECTOR (7 downto 0);
            seldig : out  STD_LOGIC_VECTOR (5 downto 0));
 end mux;
 
 architecture Behavioral of mux is
- signal digitselect : std_logic;
- signal bcdsig : std_logic_vector (7 downto 0);
- signal selsig : std_logic_vector (5 downto 0);
+ signal digitselect : std_logic_vector(1 downto 0);
 begin
 	toggle : process(clk,digitselect)
 	begin
 		if (rising_edge(clk)) then
-			digitselect <= not digitselect;
+			if (digitselect = "11") then
+				digitselect <= "00";
+			else 
+				digitselect <= digitselect + 1;
+			end if;
 		end if;
 	end process toggle;
 	
-	dig : process(clk,digitselect)
+	dig : process(clk,digitselect,bcd1,bcd2,bcd3)
 	begin
 		case digitselect is
-			when '0' => sevenseg <= bcd1;
-			when '1' => sevenseg <= bcd2;
+			when "00" => sevenseg <= bcd1;
+			when "01" => sevenseg <= bcd2;
+			when "10" => sevenseg <= bcd3;
 			when others => sevenseg <= "11111111";
 		end case;
 	end process dig;
@@ -60,10 +64,11 @@ begin
 	sel : process(digitselect,clk)
 	begin
 		case digitselect is
-			when '0' => seldig <= "111110" ;
-			when '1' => seldig <= "111101";
+			when "00" => seldig <= "111110" ;
+			when "01" => seldig <= "111101";
+			when "10" => seldig <= "111011";
+			when "11" => seldig <= "110111";
 			when others => seldig <= "111111";
 		end case;
 	end process sel;
 end Behavioral;
-
